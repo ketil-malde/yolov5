@@ -16,7 +16,7 @@ RUN pip install --no-cache -U torch torchvision numpy
 
 # Create working directory
 RUN mkdir -p /usr/src/app
-WORKDIR /usr/src/app
+WORKDIR /project
 
 # Copy contents
 COPY . /usr/src/app
@@ -25,8 +25,7 @@ COPY . /usr/src/app
 ADD https://ultralytics.com/assets/Arial.ttf /root/.config/Ultralytics/
 
 # Set environment variables
-# ENV HOME=/usr/src/app
-
+ENV HOME=/project
 
 # Usage Examples -------------------------------------------------------------------------------------------------------
 
