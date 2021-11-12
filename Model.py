@@ -14,10 +14,10 @@ USERID=os.getuid()
 GROUPID=os.getgid()
 CWD=os.getcwd()
 USERNAME=pwd.getpwuid(USERID).pw_name
-RUNTIME='' # '--gpus device=0'
+RUNTIME='--gpus device=0'
 
 def docker_run(args=''):
-    os.system(f'docker run {RUNTIME} --rm --user {USERID}:{GROUPID} -v {CWD}:/project -it {USERNAME}-{IMAGENAME} {args}')
+    os.system(f'docker run {RUNTIME} --ipc=host --rm --user {USERID}:{GROUPID} -v {CWD}:/project -it {USERNAME}-{IMAGENAME} {args}')
 
 def docker_build(args=''):
     os.system(f'docker build --build-arg user={USERNAME} --build-arg uid={USERID} --build-arg gid={GROUPID} -t {USERNAME}-{IMAGENAME} {args}')
@@ -32,6 +32,7 @@ def prep_data():
     of = None
     dx = None
     dy = None
+    tf = open('train.txt', 'w')
     with open('annotations.csv', 'r') as f:
         for l in f.readlines():
             im, cls, bbox, mask = l.split('\t')
@@ -39,6 +40,7 @@ def prep_data():
                 if of is not None: of.close()
                 curim = im
                 tmpimg = cv2.imread(f'images/{im}')
+                tf.write(f'./images/{im}\n')
                 dy,dx,C = tmpimg.shape
                 of = open('labels/'+im[:-4]+'.txt', 'w')
             x1, y1, x2, y2 = literal_eval(bbox)
@@ -50,6 +52,7 @@ def prep_data():
 
             of.write(f'0 {cx/dx} {cy/dy} {w/dx} {h/dy}\n')
     of.close()
+    tf.close()
 
 class Model:
     def __init__(self, conf, mypath):
@@ -70,9 +73,9 @@ class Model:
         '''Verify that data is in place and that the output doesn't exist'''
         pass
 
-    def predict(self, target, output):
+    def predict(self, wgths, target, output):
         '''Run a trained network on the data in target'''
-        pass
+        docker_run(f"python3 /usr/src/app/detect.py --weights={wgths} --source={target} --name={output}")
 
     def test(self):
         '''Run tests'''
@@ -91,18 +94,6 @@ if __name__ == '__main__':
     import argparse
     import sys
     
-    # if sys.argv[1] == 'train':
-    #     # p = argparse.ArgumentParser(description='Train Mask R-CNN')
-    #     train()
-    # elif sys.argv[1] == 'test':
-    #     test()
-    # elif sys.argv[1] == 'predict':
-    #     predict()
-    # elif sys.argv[1] == 'check':
-    #     check()
-    # elif sys.argv[1] == 'status':
-    #     status()
-    # el
     if sys.argv[1] == 'build':
         docker_build()
     else:
