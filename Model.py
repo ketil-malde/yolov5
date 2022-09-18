@@ -23,6 +23,7 @@ def docker_build(args=''):
     os.system(f'docker build --build-arg user={USERNAME} --build-arg uid={USERID} --build-arg gid={GROUPID} -t {USERNAME}-{IMAGENAME} {args}')
 
 from ast import literal_eval
+from random import shuffle
 
 def prep_data():
     '''Extract info from annotations.csv and write text files in ./labels'''
@@ -32,12 +33,16 @@ def prep_data():
     of = None
     dx = None
     dy = None
+    classes = []
+    imgs = []
     with open('annotations.csv', 'r') as f:
         for l in f.readlines():
-            im, cls, bbox, mask = l.split('\t')
+            im, cls, bbox = l.split('\t')
             if im != curim:
+                imgs.append(im)
                 if of is not None: of.close()
                 curim = im
+                assert(os.path.exists(f'images/{im}'))
                 tmpimg = cv2.imread(f'images/{im}')
                 dy,dx,C = tmpimg.shape
                 of = open('labels/'+im[:-4]+'.txt', 'w')
@@ -47,9 +52,25 @@ def prep_data():
             cy = (float(y1)+float(y2))/2
             w  = float(x2)-float(x1)
             h  = float(y2)-float(y1)
-
-            of.write(f'0 {cx/dx} {cy/dy} {w/dx} {h/dy}\n')
+            if cls not in classes:
+                classes.append(cls)
+            myclass = classes.index(cls)
+            of.write(f'{myclass} {cx/dx} {cy/dy} {w/dx} {h/dy}\n')
     of.close()
+
+    # generate dataset.yaml
+    with open('dataset.yaml', 'w') as f:
+        f.write(f'path: .\ntrain: train.txt\nval: test.txt\ntest: test.txt\n')
+        f.write(f'nc: {len(classes)}\n')
+        f.write(f'names: {classes}\n')
+
+    # generate train/val/test.txt
+    print("Shuffling...")
+    shuffle(imgs)
+    with open('test.txt', 'w') as f:
+        f.writelines(["./images/"+s+'\n' for s in imgs[:200]])
+    with open('train.txt', 'w') as f:
+        f.writelines(["./images/"+s+'\n' for s in imgs[200:]])
 
 class Model:
     def __init__(self, conf, mypath):
