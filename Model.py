@@ -95,7 +95,7 @@ class Model:
 
     def predict(self, wgths, target, output):
         '''Run a trained network on the data in target'''
-        docker_run(f"python3 /usr/src/app/detect.py --weights={wgths} --source={target} --name={output}")
+        docker_run(f"python3 /usr/src/app/detect.py --weights={wgths} --source={target} --name={output} --save-txt --save-conf")
 
     def test(self):
         '''Run tests'''
