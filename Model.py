@@ -115,7 +115,9 @@ if __name__ == '__main__':
     import sys
     
     if sys.argv[1] == 'build':
-        docker_build()
+        docker_build('.')
+    elif sys.argv[1] == 'test':
+        docker_run('nvidia-smi')
     else:
         error('Usage: {sys.argv[0]} [check,status,train,predict] ...')
 
