@@ -44,7 +44,6 @@ def prep_data():
                 curim = im
                 assert(os.path.exists(f'images/{im}'))
                 tmpimg = cv2.imread(f'images/{im}')
-                tf.write(f'./images/{im}\n')
                 dy,dx,C = tmpimg.shape
                 of = open('labels/'+im[:-4]+'.txt', 'w')
             x1, y1, x2, y2 = literal_eval(bbox)
@@ -55,16 +54,15 @@ def prep_data():
             h  = float(y2)-float(y1)
             if cls not in classes:
                 classes.append(cls)
-            myclass = classes.index(cls)
+            myclass = 0 # classes.index(cls)
             of.write(f'{myclass} {cx/dx} {cy/dy} {w/dx} {h/dy}\n')
     of.close()
-    tf.close()
 
     # generate dataset.yaml
     with open('dataset.yaml', 'w') as f:
         f.write(f'path: .\ntrain: train.txt\nval: test.txt\ntest: test.txt\n')
-        f.write(f'nc: {len(classes)}\n')
-        f.write(f'names: {classes}\n')
+        f.write(f'nc: 1\n')  # {len(classes)}\n')
+        f.write(f'names: [fish]\n')  # {classes}\n')
 
     # generate train/val/test.txt
     print("Shuffling...")
