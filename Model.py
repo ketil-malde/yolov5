@@ -118,6 +118,7 @@ if __name__ == '__main__':
         docker_build('.')
     elif sys.argv[1] == 'test':
         docker_run('nvidia-smi')
+        docker_run('python3 /usr/src/app/test.py')
     else:
         error('Usage: {sys.argv[0]} [check,status,train,predict] ...')
 
