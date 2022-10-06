@@ -11,7 +11,9 @@ import yaml
 from tqdm import tqdm
 
 FILE = Path(__file__).resolve()
-ROOT = FILE.parents[3]  # YOLOv5 root directory
+# ROOT = FILE.parents[3]  # YOLOv5 root directory
+ROOT = Path('/project')
+
 if str(ROOT) not in sys.path:
     sys.path.append(str(ROOT))  # add ROOT to PATH
 
